@@ -73,6 +73,21 @@ pub mod blog_d_app {
 
         Ok(())
     }
+
+    pub fn update_post(ctx: Context<UpdatePost>, title: String, content: String) -> ProgramResult {
+        let post_account = &mut ctx.accounts.post_account;
+
+        post_account.title = title;
+        post_account.content = content;
+
+        emit!(PostEvent {
+            label: "UPDATE".to_string(),
+            post_id: post_account.key(),
+            next_post_id: None
+        });
+
+        Ok(())
+    }
 }
 
 //----------------------------------------------------//
@@ -146,6 +161,13 @@ pub struct CreatePost<'info> {
     pub authority: Signer<'info>,
 
     pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct UpdatePost<'info> {
+    #[account(mut, has_one = authority)]
+    pub post_account: Account<'info, PostState>,
+    pub authority: Signer<'info>,
 }
 
 #[account]
