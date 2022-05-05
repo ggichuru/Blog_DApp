@@ -3,7 +3,8 @@ use anchor_lang::solana_program::entrypoint::ProgramResult;
 
 declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS");
 
-#[program]
+// TODO: Uncomment program
+// #[program]
 pub mod blog_d_app {
     use super::*;
 
@@ -134,6 +135,7 @@ pub struct InitBlog<'info> {
     pub genesis_post_account: Account<'info, PostState>,
 
     // Authority is the program signer - creater of the blog - rent payer
+    #[account(mut)]
     pub authority: Signer<'info>,
 
     // system program is required by runtime for creating the account
@@ -152,6 +154,7 @@ pub struct SignupUser<'info> {
     #[account(init, payer = authority, space = 8 + 40 + 120 + 32)]
     pub user_account: Account<'info, UserState>,
 
+    #[account(mut)]
     pub authority: Signer<'info>,
     pub system_program: Program<'info, System>,
 }
@@ -188,6 +191,7 @@ pub struct CreatePost<'info> {
     #[account(mut)]
     pub blog_account: Account<'info, BlogState>,
 
+    #[account(mut)]
     pub authority: Signer<'info>,
 
     pub system_program: Program<'info, System>,
