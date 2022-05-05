@@ -88,6 +88,36 @@ pub mod blog_d_app {
 
         Ok(())
     }
+
+    pub fn DeletePost(ctx: Context<DeletePost>) -> ProgramResult {
+        let post_account = &mut ctx.accounts.post_account;
+        let next_post_account = &mut ctx.accounts.next_post_account;
+
+        next_post_account.pre_post_key = post_account.pre_post_key;
+
+        emit!(PostEvent {
+            label: "DELETE".to_string(),
+            post_id: post_account.key(),
+            next_post_id: Some(next_post_account.key())
+        });
+
+        Ok(())
+    }
+
+    pub fn delete_latest_post(ctx: Context<DeleteLatestPost>) -> ProgramResult {
+        let post_account = &mut ctx.accounts.post_account;
+        let blog_account = &mut ctx.accounts.blog_account;
+
+        blog_account.current_post_key = post_account.pre_post_key;
+
+        emit!(PostEvent {
+            label: "DELETE".to_string(),
+            post_id: post_account.key(),
+            next_post_id: None
+        });
+
+        Ok(())
+    }
 }
 
 //----------------------------------------------------//
@@ -167,6 +197,30 @@ pub struct CreatePost<'info> {
 pub struct UpdatePost<'info> {
     #[account(mut, has_one = authority)]
     pub post_account: Account<'info, PostState>,
+    pub authority: Signer<'info>,
+}
+
+#[derive(Accounts)]
+pub struct DeletePost<'info> {
+    // Constraint perfoms simple if check
+    #[account(mut, has_one = authority, close = authority, constraint = post_account.key() == next_post_account.pre_post_key)]
+    pub post_account: Account<'info, PostState>,
+
+    #[account(mut)]
+    pub next_post_account: Account<'info, PostState>,
+
+    pub authority: Signer<'info>,
+}
+
+#[derive(Accounts)]
+pub struct DeleteLatestPost<'info> {
+    #[account(
+        mut, has_one = authority, close = authority
+    )]
+    pub post_account: Account<'info, PostState>,
+
+    #[account(mut)]
+    pub blog_account: Account<'info, BlogState>,
     pub authority: Signer<'info>,
 }
 
